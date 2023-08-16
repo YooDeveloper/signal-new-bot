@@ -15,8 +15,7 @@ from tgbot.middlewares.environment import EnvironmentMiddleware
 
 logger = logging.getLogger(__name__)
 
-
-from db.models import *
+from air import *
 
 
 def register_all_middlewares(dp, config):
@@ -82,8 +81,8 @@ async def main():
                     result = round(float(tst) / logic.val, 2)
                     res+=f"{logic.title}: {result}\n"
                 res+=f"\n{task.body}"
-                if task.logics.count() > 0:
-                    await bot.send_message(chat_id, str(res))
+                # if task.logics.count() > 0:
+                await bot.send_message(chat_id, str(res))
         except Exception as e: 
             print(e)
 

@@ -10,8 +10,8 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 
-from db.models import *
 
+from air import *
 
 
 class EditBody(StatesGroup):
@@ -48,7 +48,7 @@ def admin_keyboard():
     markup = InlineKeyboardMarkup(row_width=2)
     for task in Task.all():
         markup.row(
-            InlineKeyboardButton(text=f"{task.channel}", callback_data=f"show_task:{task.id}"),
+            InlineKeyboardButton(text=f"{task.name}", callback_data=f"show_task:{task.id}"),
         )
     markup.row(
         InlineKeyboardButton(text=f"Добавить канал", callback_data=f"add_task"),
@@ -58,7 +58,7 @@ def admin_keyboard():
 
 def task_keyboard(task_id):
     markup = InlineKeyboardMarkup(row_width=2)
-    task = Task.find(task_id)
+    task = Task.from_id(task_id)
     for logic in task.logics:
         markup.row(
             InlineKeyboardButton(text=f"{logic.title}", callback_data=f"show_logic:{logic.id}"),
@@ -98,7 +98,7 @@ async def admin_dp(call: CallbackQuery, state: FSMContext):
 
 async def show_task_dp(call: CallbackQuery, state: FSMContext):
     task_id = call.data.split(':')[1]
-    task = Task.find(task_id)
+    task = Task.from_id(task_id)
     await call.message.edit_text(f"{task.channel}\n{task.body}", reply_markup=task_keyboard(task_id))
 
 
@@ -179,10 +179,11 @@ async def add_task_input_mh(message: types.Message, state: FSMContext):
         try:
             channel = message.text.split('#')[0]
             body = message.text.split('#')[1]
-            Task.create(
-                channel = channel,
-                body=body
-            )
+            # Task.create(
+            #     channel = channel,
+            #     body=body
+            # )
+            table.create({"Name": "Bob", "Channel": channel, "Body": body})
             await message.answer('Проверки', reply_markup=admin_keyboard())
         except:
             await message.answer('что-то пошло не так')
@@ -219,7 +220,7 @@ async def edit_body_dp(call: CallbackQuery, state: FSMContext):
 async def edit_body_mh(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         task_id = data['task_id']
-        task = Task.find(task_id)
+        task = Task.from_id(task_id)
         task.body = message.text
         task.save()
         await message.answer(f"{task.channel}\n{task.body}", reply_markup=task_keyboard(task.id))
