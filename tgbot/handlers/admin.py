@@ -12,6 +12,11 @@ from aiogram.types import (
 
 
 from air import *
+from pil import *
+
+
+class InputTextForImage(StatesGroup):
+    input = State()
 
 
 class EditBody(StatesGroup):
@@ -157,17 +162,20 @@ async def add_logic_input_mh(message: types.Message, state: FSMContext):
             percent = message.text.split('|')[1]
             margin = message.text.split('|')[2]
             val = message.text.split('|')[3]
-            Logic.create(
-                task_id = task_id,
+            task = Task.from_id(task_id)
+            logic = Logic(
                 title=title,
-                percent=percent,
-                margin=margin,
-                val=val
+                percent=int(percent),
+                margin=int(margin),
+                val=int(val),
+                task = Task()
             )
-            task = Task.find(task_id)
+            logic.save()
             await message.answer(f"{task.channel}\n{task.body}", reply_markup=task_keyboard(task_id))
-        except:
+        except Exception as e:
+            print(e)
             await message.answer('Введите формулу строго в формате: название|процент|рублевая накрутка|делитель')
+            await message.answer(task_id)
 
 
 async def add_task_dp(call: CallbackQuery, state: FSMContext):
@@ -225,6 +233,17 @@ async def edit_body_mh(message: types.Message, state: FSMContext):
         task.save()
         await message.answer(f"{task.channel}\n{task.body}", reply_markup=task_keyboard(task.id))
 
+async def draw_start(message: Message):
+    await message.answer('Введите текст')
+    await InputTextForImage.input.set()
+
+async def input_text_for_image(message: types.Message, state: FSMContext):
+    text = message.text
+    inp = addText(text)
+    photo = InputFile(inp)
+    await message.answer_photo(photo)
+    await state.reset_state()
+
 def register_admin(dp: Dispatcher):
     dp.register_message_handler(admin_start, commands=["tasks"], state="*")
     dp.register_callback_query_handler(admin_dp, text_startswith="admin", state="*")
@@ -244,3 +263,8 @@ def register_admin(dp: Dispatcher):
 
     dp.register_callback_query_handler(edit_body_dp, text_startswith="edbo", state="*")
     dp.register_message_handler(edit_body_mh, state=EditBody.input)
+
+    dp.register_message_handler(draw_start, commands=["img"], state="*")
+    dp.register_message_handler(input_text_for_image, state=InputTextForImage.input)
+
+

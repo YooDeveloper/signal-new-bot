@@ -3,6 +3,8 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.types import InputFile
+
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
 
@@ -16,7 +18,7 @@ from tgbot.middlewares.environment import EnvironmentMiddleware
 logger = logging.getLogger(__name__)
 
 from air import *
-
+from pil import *
 
 def register_all_middlewares(dp, config):
     dp.setup_middleware(EnvironmentMiddleware(config=config))
@@ -80,9 +82,19 @@ async def main():
                     tst = api_val + round(api_val * logic.percent / 100, 2) + logic.margin
                     result = round(float(tst) / logic.val, 2)
                     res+=f"{logic.title}: {result}\n"
-                res+=f"\n{task.body}"
+                    res = addText(str(result))
+                    photo = InputFile(res)
+                    if logic.last_val == result:
+                        print('не изменилось')
+                    else:
+                        await bot.send_photo(chat_id, photo=photo, caption=logic.title)
+                    lg = Logic.from_id(logic.id)
+                    lg.last_val = result
+                    lg.save()
+                # res+=f"\n{task.body}"
                 # if task.logics.count() > 0:
-                await bot.send_message(chat_id, str(res))
+                # await bot.send_message(chat_id, str(res))
+
         except Exception as e: 
             print(e)
 

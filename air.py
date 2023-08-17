@@ -17,21 +17,22 @@ class Task(Model):
 
     class Meta:
         base_id = "appkufJyNyxL0SMxm"
-        table_name = "tasks"
+        table_name = "channels"
         api_key = API_KEY
 
 class Logic(Model):
     title = F.TextField("Title")
-    percent = F.IntegerField("percent")
-    margin = F.IntegerField("margin")
-    val = F.IntegerField("val")
-    task = F.LinkField("tasks", Task)
+    percent = F.FloatField("Процент")
+    margin = F.IntegerField("Накрутка руб")
+    val = F.IntegerField("Делитель")
+    last_val = F.FloatField("last_val")
+    task = F.LinkField("channels", Task)
 
     class Meta:
         base_id = "appkufJyNyxL0SMxm"
         table_name = "logics"
         api_key = API_KEY
 
-# for task in Task.all():
-#     for logic in task.logics:
-#         print(logic.percent)
+for task in Task.all():
+    for logic in task.logics:
+        print(logic.task)
