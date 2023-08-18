@@ -78,19 +78,22 @@ async def main():
                 res = ""
                 chat_id = task.channel
                 text = task.body
-                for logic in task.logics:
-                    tst = api_val + round(api_val * logic.percent / 100, 2) + logic.margin
-                    result = round(float(tst) / logic.val, 2)
-                    res+=f"{logic.title}: {result}\n"
-                    res = addText(str(result))
-                    photo = InputFile(res)
-                    if logic.last_val == result:
-                        print('не изменилось')
-                    else:
-                        await bot.send_photo(chat_id, photo=photo, caption=logic.title)
-                    lg = Logic.from_id(logic.id)
-                    lg.last_val = result
-                    lg.save()
+                for package in task.packages:
+                    print(package.var_count)
+                    if package.var_count == 1:
+                        for logic in package.logics:
+                            tst = api_val + round(api_val * logic.percent / 100, 2) + logic.margin
+                            result = round(float(tst) / logic.val, 2)
+                            res+=f"{logic.title}: {result}\n"
+                            res = addText(str(result))
+                            photo = InputFile(res)
+                            if logic.last_val == result:
+                                print('не изменилось')
+                            else:
+                                await bot.send_photo(chat_id, photo=photo, caption=logic.title)
+                            lg = Logic.from_id(logic.id)
+                            lg.last_val = result
+                            lg.save()
                 # res+=f"\n{task.body}"
                 # if task.logics.count() > 0:
                 # await bot.send_message(chat_id, str(res))
